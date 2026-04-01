@@ -170,36 +170,54 @@ async function sendMagicLink() {
     return;
   }
 
-  // Check if email is authorized BEFORE sending magic link
-  const { data: authCheck } = await supabase
-    .from('authorized_users')
-    .select('email')
-    .eq('email', email)
-    .eq('active', true)
-    .single();
-
-  if (!authCheck) {
-    showMsg('Este email não está autorizado. Entre em contato com o administrador.', 'error');
-    return;
-  }
-
   const btn = document.getElementById('authBtn');
   btn.disabled = true;
-  btn.textContent = '⏳ Enviando...';
+  btn.textContent = '⏳ Verificando...';
 
-  const redirectTo = window.location.origin + BASE_PATH + '/';
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: redirectTo }
-  });
+  try {
+    // Check if email is authorized
+    const { data: authCheck, error: checkError } = await supabase
+      .from('authorized_users')
+      .select('email')
+      .eq('email', email)
+      .eq('active', true)
+      .maybeSingle();
 
-  btn.disabled = false;
-  btn.textContent = '📨 Enviar Link de Acesso';
+    if (checkError) {
+      console.error('Auth check error:', checkError);
+      showMsg('Erro de conexão: ' + checkError.message, 'error');
+      btn.disabled = false;
+      btn.textContent = '📨 Enviar Link de Acesso';
+      return;
+    }
 
-  if (error) {
-    showMsg('Erro ao enviar: ' + error.message, 'error');
-  } else {
-    showMsg('✅ Link enviado! Verifique seu email e clique no link para acessar.', 'success');
+    if (!authCheck) {
+      showMsg('Este email não está autorizado. Entre em contato com o administrador.', 'error');
+      btn.disabled = false;
+      btn.textContent = '📨 Enviar Link de Acesso';
+      return;
+    }
+
+    btn.textContent = '⏳ Enviando...';
+    const redirectTo = window.location.origin + BASE_PATH + '/';
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: redirectTo }
+    });
+
+    btn.disabled = false;
+    btn.textContent = '📨 Enviar Link de Acesso';
+
+    if (error) {
+      showMsg('Erro ao enviar: ' + error.message, 'error');
+    } else {
+      showMsg('✅ Link enviado! Verifique seu email e clique no link para acessar.', 'success');
+    }
+  } catch(e) {
+    console.error('Unexpected error:', e);
+    showMsg('Erro inesperado: ' + e.message, 'error');
+    btn.disabled = false;
+    btn.textContent = '📨 Enviar Link de Acesso';
   }
 }
 
