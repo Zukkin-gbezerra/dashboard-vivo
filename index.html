@@ -5,71 +5,112 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard Vivo — Zukkin</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: 'Segoe UI', Arial, sans-serif;
-  background: linear-gradient(135deg, #1a0028 0%, #0d0014 50%, #001a2e 100%);
-  min-height: 100vh; display: flex; align-items: center; justify-content: center;
-  color: #F0EEF8;
-}
-.box {
-  background: #1A1A28; border: 1px solid #2A2A3E; border-radius: 20px;
-  padding: 48px 40px; width: 100%; max-width: 420px; text-align: center;
-}
-.logo { font-size: 44px; font-weight: 900; color: #9900CC; letter-spacing: -2px; margin-bottom: 4px; }
-.tagline { font-size: 11px; color: #7B7A99; margin-bottom: 36px; text-transform: uppercase; letter-spacing: 1.2px; }
-h1 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
-p { font-size: 13px; color: #7B7A99; margin-bottom: 28px; line-height: 1.6; }
-input {
-  width: 100%; padding: 13px 16px; background: #0D0D14; border: 1px solid #2A2A3E;
-  border-radius: 10px; color: #F0EEF8; font-size: 14px; font-family: inherit;
-  outline: none; margin-bottom: 14px; transition: border-color .2s;
-}
-input:focus { border-color: #660099; }
-button {
-  width: 100%; padding: 13px; background: #660099; color: white; border: none;
-  border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer;
-  font-family: inherit; transition: background .2s;
-}
-button:hover { background: #8B00CC; }
-button:disabled { opacity: .5; cursor: not-allowed; }
-.msg {
-  margin-top: 16px; padding: 12px 16px; border-radius: 10px;
-  font-size: 13px; display: none; text-align: left;
-}
-.msg.ok { background: rgba(0,230,118,.1); border: 1px solid rgba(0,230,118,.3); color: #00E676; }
-.msg.err { background: rgba(255,68,68,.1); border: 1px solid rgba(255,68,68,.3); color: #FF5555; }
-.footer { font-size: 11px; color: #3a3a5a; margin-top: 28px; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:linear-gradient(135deg,#1a0028,#0d0014,#001a2e);min-height:100vh;display:flex;align-items:center;justify-content:center;color:#F0EEF8}
+.box{background:#1A1A28;border:1px solid #2A2A3E;border-radius:20px;padding:48px 40px;width:100%;max-width:420px;text-align:center}
+.logo{font-size:44px;font-weight:900;color:#9900CC;letter-spacing:-2px;margin-bottom:4px}
+.tagline{font-size:11px;color:#7B7A99;margin-bottom:36px;text-transform:uppercase;letter-spacing:1.2px}
+h1{font-size:20px;font-weight:700;margin-bottom:8px}
+p{font-size:13px;color:#7B7A99;margin-bottom:28px;line-height:1.6}
+input{width:100%;padding:13px 16px;background:#0D0D14;border:1px solid #2A2A3E;border-radius:10px;color:#F0EEF8;font-size:14px;font-family:inherit;outline:none;margin-bottom:14px;transition:border-color .2s}
+input:focus{border-color:#660099}
+button{width:100%;padding:13px;background:#660099;color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .2s}
+button:hover{background:#8B00CC}
+button:disabled{opacity:.5;cursor:not-allowed}
+.msg{margin-top:16px;padding:12px 16px;border-radius:10px;font-size:13px;display:none;text-align:left}
+.msg.ok{background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.3);color:#00E676}
+.msg.err{background:rgba(255,68,68,.1);border:1px solid rgba(255,68,68,.3);color:#FF5555}
+.footer{font-size:11px;color:#3a3a5a;margin-top:28px}
+.loading{display:none;color:#7B7A99;font-size:13px;margin-top:16px}
 </style>
 </head>
 <body>
 <div class="box">
   <div class="logo">vivo</div>
   <div class="tagline">Inteligência Competitiva · Zukkin</div>
-  <h1>Acesso ao Dashboard</h1>
-  <p>Digite seu email para receber um link de acesso.<br>Apenas emails autorizados podem entrar.</p>
-  <input type="email" id="email" placeholder="seu@email.com">
-  <button id="btn">📨 Enviar Link de Acesso</button>
-  <div class="msg" id="msg"></div>
+  <div id="loginSection">
+    <h1>Acesso ao Dashboard</h1>
+    <p>Digite seu email para receber um link de acesso.<br>Apenas emails autorizados podem entrar.</p>
+    <input type="email" id="email" placeholder="seu@email.com">
+    <button id="btn">📨 Enviar Link de Acesso</button>
+    <div class="msg" id="msg"></div>
+  </div>
+  <div id="loadingSection" style="display:none">
+    <h1>Autenticando...</h1>
+    <p>Verificando suas credenciais, aguarde.</p>
+    <div style="margin-top:20px;color:#660099;font-size:24px">⏳</div>
+  </div>
   <div class="footer">Powered by Zukkin · Acesso restrito</div>
 </div>
 
 <script>
-// Inline Supabase client — no external dependency needed for just auth
 const SB_URL = 'https://srzolfkywvilcqbkmblt.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyem9sZmt5d3ZpbGNxYmttYmx0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwODA1NTQsImV4cCI6MjA5MDY1NjU1NH0.IzXb4Te9h8OPQds2bmBQlw8Lho0d4stX4bRPF9v65sc';
+const BASE = 'https://zukkin-gbezerra.github.io/dashboard-vivo';
 
-// Check if already logged in via hash (magic link callback)
-const hash = window.location.hash;
-if (hash && (hash.includes('access_token') || hash.includes('type=magiclink'))) {
-  window.location.href = 'dashboard.html' + hash;
+// ── Handle magic link callback ──────────────────────────────
+// Supabase appends #access_token=... to whatever URL it redirects to
+// Since Site URL = BASE (index.html), the token lands HERE
+async function handleCallback() {
+  const hash = window.location.hash;
+  if (!hash || !hash.includes('access_token')) return false;
+
+  document.getElementById('loginSection').style.display = 'none';
+  document.getElementById('loadingSection').style.display = 'block';
+
+  const params = new URLSearchParams(hash.slice(1));
+  const token = params.get('access_token');
+  const tokenType = params.get('token_type');
+
+  if (!token) {
+    show('Token inválido. Solicite um novo link.', 'err');
+    document.getElementById('loginSection').style.display = 'block';
+    document.getElementById('loadingSection').style.display = 'none';
+    return true;
+  }
+
+  // Clean URL
+  window.history.replaceState(null, '', window.location.pathname);
+
+  try {
+    // Validate token
+    const userRes = await fetch(SB_URL + '/auth/v1/user', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+    });
+    const user = await userRes.json();
+
+    if (!user || user.error || !user.email) {
+      throw new Error('Sessão inválida');
+    }
+
+    // Check authorized_users
+    const authRes = await fetch(SB_URL + '/rest/v1/authorized_users?email=eq.' + encodeURIComponent(user.email) + '&active=eq.true&select=email', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+    });
+    const authData = await authRes.json();
+
+    if (!authData || authData.length === 0) {
+      throw new Error('Email não autorizado');
+    }
+
+    // Store session and redirect to dashboard
+    sessionStorage.setItem('sb_token', token);
+    sessionStorage.setItem('sb_email', user.email);
+    window.location.href = BASE + '/dashboard.html';
+
+  } catch(e) {
+    sessionStorage.removeItem('sb_token');
+    document.getElementById('loginSection').style.display = 'block';
+    document.getElementById('loadingSection').style.display = 'none';
+    show('Erro: ' + e.message, 'err');
+  }
+  return true;
 }
 
-// Simple fetch-based auth (no SDK needed for OTP)
+// ── Send magic link ─────────────────────────────────────────
 async function sendLink() {
   const email = document.getElementById('email').value.trim();
   const btn = document.getElementById('btn');
-  const msg = document.getElementById('msg');
 
   if (!email || !email.includes('@')) {
     show('Digite um email válido.', 'err');
@@ -78,15 +119,12 @@ async function sendLink() {
 
   btn.disabled = true;
   btn.textContent = '⏳ Verificando...';
-  msg.style.display = 'none';
+  document.getElementById('msg').style.display = 'none';
 
   try {
-    // Check authorization
+    // Check authorization first
     const checkRes = await fetch(SB_URL + '/rest/v1/authorized_users?email=eq.' + encodeURIComponent(email) + '&active=eq.true&select=email', {
-      headers: {
-        'apikey': SB_KEY,
-        'Authorization': 'Bearer ' + SB_KEY,
-      }
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
     });
     const checkData = await checkRes.json();
 
@@ -97,26 +135,23 @@ async function sendLink() {
       return;
     }
 
-    // Send magic link
     btn.textContent = '⏳ Enviando...';
-    // Build correct redirect URL
-    const base = window.location.origin + '/dashboard-vivo';
-    const redirectTo = base + '/dashboard.html';
-    console.log('Redirect URL:', redirectTo);
+
+    // Send OTP — redirectTo = index.html (this page handles the token)
     const otpRes = await fetch(SB_URL + '/auth/v1/otp', {
       method: 'POST',
-      headers: {
-        'apikey': SB_KEY,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, options: { emailRedirectTo: redirectTo } })
+      headers: { 'apikey': SB_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: email,
+        options: { emailRedirectTo: BASE + '/' }
+      })
     });
 
-    if (otpRes.ok) {
+    if (otpRes.ok || otpRes.status === 200) {
       show('✅ Link enviado! Verifique seu email e clique no link para acessar.', 'ok');
     } else {
-      const err = await otpRes.json();
-      show('Erro: ' + (err.msg || err.message || 'Tente novamente.'), 'err');
+      const err = await otpRes.json().catch(() => ({}));
+      show('Erro ao enviar: ' + (err.msg || err.message || otpRes.status), 'err');
     }
   } catch(e) {
     show('Erro de conexão: ' + e.message, 'err');
@@ -131,10 +166,13 @@ function show(text, type) {
   el.textContent = text;
   el.className = 'msg ' + type;
   el.style.display = 'block';
+  document.getElementById('loginSection').style.display = 'block';
 }
 
+// Init
+handleCallback();
 document.getElementById('btn').addEventListener('click', sendLink);
-document.getElementById('email').addEventListener('keydown', e => { if(e.key === 'Enter') sendLink(); });
+document.getElementById('email').addEventListener('keydown', e => { if(e.key==='Enter') sendLink(); });
 </script>
 </body>
 </html>
