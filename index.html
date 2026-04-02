@@ -99,7 +99,10 @@ async function sendLink() {
 
     // Send magic link
     btn.textContent = '⏳ Enviando...';
-    const redirectTo = window.location.origin + window.location.pathname.replace('index.html','').replace(/\/$/,'') + '/dashboard.html';
+    // Build correct redirect URL
+    const base = window.location.origin + '/dashboard-vivo';
+    const redirectTo = base + '/dashboard.html';
+    console.log('Redirect URL:', redirectTo);
     const otpRes = await fetch(SB_URL + '/auth/v1/otp', {
       method: 'POST',
       headers: {
